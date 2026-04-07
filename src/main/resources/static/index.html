@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>ZeriLanguage - 語言學習</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f4f4f9; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        h1 { color: #333; margin-bottom: 20px; }
+        .word { font-size: 32px; font-weight: bold; color: #4A90E2; margin: 20px 0; }
+        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #4A90E2; color: white; margin: 5px; }
+        button:hover { background: #357ABD; }
+        #result { margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h1>ZeriLanguage</h1>
+    <div id="wordDisplay" class="word">載入中...</div>
+
+    <button onclick="playAudio()">🔊 發音</button>
+    <br>
+    <input type="text" id="answerInput" placeholder="輸入中文翻譯...">
+    <br>
+    <button onclick="checkAnswer()">檢查答案</button>
+    <button onclick="nextCard()">下一題</button>
+    <input type="text" id="wordInput" placeholder="單字">
+    <input type="text" id="translationInput" placeholder="翻譯">
+    <button onclick="addCard()">新增</button>
+
+    <div id="result"></div>
+</div>
+
+<hr>
+<h3>我的單字庫</h3>
+<table id="wordTable" border="1" style="width:100%; border-collapse: collapse;">
+    <thead>
+    <tr>
+        <th>單字</th>
+        <th>翻譯</th>
+        <th>語言</th>
+        <th>熟練度</th>
+    </tr>
+    </thead>
+    <tbody id="tableBody">
+    </tbody>
+</table>
+
+<script>
+    let currentCard = null;
+    let currentAudioUrl = "";
+
+    // 1. 抓取隨機單字
+    async function nextCard() {
+        document.getElementById('result').innerText = "";
+        document.getElementById('answerInput').value = "";
+
+        const response = await fetch('/api/cards/random');
+        const result = await response.json();
+
+        currentCard = result.data;
+        currentAudioUrl = result.audioUrl;
+
+        document.getElementById('wordDisplay').innerText = currentCard.word;
+    }
+
+    // 這是核心發音引擎，誰給它文字和語言，它就唸誰
+    function speak(word, lang) {
+        if (!word) return;
+        const utterance = new SpeechSynthesisUtterance(word);
+        const upperLang = lang ? lang.toUpperCase() : 'EN';
+
+        if (upperLang === 'JP' || upperLang === 'JA') utterance.lang = 'ja-JP';
+        else if (upperLang === 'KR' || upperLang === 'KO') utterance.lang = 'ko-KR';
+        else if (upperLang === 'EN') utterance.lang = 'en-US';
+        else utterance.lang = 'zh-TW';
+
+        //utterance.rate = 0.9;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 2. 原本的抽測發音，改為呼叫 speak
+    function playAudio() {
+        if (currentCard) {
+            speak(currentCard.word, currentCard.language);
+        }
+    }
+
+    // 3. 檢查答案
+    async function checkAnswer() {
+        const userAnswer = document.getElementById('answerInput').value;
+
+        const response = await fetch('/api/cards/check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: currentCard.id, answer: userAnswer })
+        });
+
+        const data = await response.json();
+        const resultDiv = document.getElementById('result');
+
+        if (data.result === 'success') {
+            resultDiv.style.color = "green";
+            resultDiv.innerText = "正確！太棒了！";
+        } else {
+            resultDiv.style.color = "red";
+            resultDiv.innerText = "錯了喔，正確答案是：" + data.message;
+        }
+    }
+
+    async function deleteCard(id) {
+        const response = await fetch(`/api/cards/${id}`, {
+            method: 'DELETE'
+        });
+
+        // 解析 JSON
+        const data = await response.json();
+
+        if (data.result === 'success') {
+            console.log("刪除成功，更新表格");
+            loadTable();
+        } else {
+            alert("刪除失敗: " + (data.message || "未知錯誤"));
+        }
+    }
+
+    function detectLanguage(text) {
+        const jpRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/; // 日文字元範圍
+        const krRegex = /[\uAC00-\uD7AF\u1100-\u11FF]/; // 韓文字元範圍
+        const enRegex = /^[A-Za-z0-9\s!@#$%^&*()_+=-]+$/; // 純英文字元
+
+        if (jpRegex.test(text)) return 'JA';
+        if (krRegex.test(text)) return 'KO';
+        if (enRegex.test(text)) return 'EN';
+        return 'ZH'; // 預設中文
+    }
+
+    async function addCard() {
+        const wordEl = document.getElementById('wordInput');
+        const transEl = document.getElementById('translationInput');
+
+        const wordValue = wordEl.value.trim(); // 取得文字
+        const transValue = transEl.value.trim();
+
+        if (!wordValue) return alert("請輸入單字");
+
+        const autoLang = detectLanguage(wordValue); // 自動偵測
+
+        const response = await fetch('/api/cards/addCard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                word: wordValue,
+                translation: transValue,
+                language: autoLang
+            })
+        });
+
+        if (response.ok) {
+            wordInput.value = "";
+            translationInput.value = "";
+            loadTable();
+        } else {
+            alert("新增失敗，檢查後端日誌");
+        }
+
+    }
+
+    async function loadTable() {
+        const response = await fetch('/api/cards'); // 呼叫你的 GET getAllCards API
+        const cards = await response.json();
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = ""; // 先清空舊資料
+
+        cards.forEach(card => {
+            const row = `<tr>
+            <td><span style="cursor:pointer" onclick="speak('${card.word}', '${card.language}')">🔊</span> ${card.word}</td>
+            <td>${card.translation}</td>
+            <td>${card.language}</td>
+            <td>${card.level}</td>
+            <td>
+                <button onclick="deleteCard(${card.id})">刪除</button>
+            </td>
+        </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // 初始載入
+    nextCard();
+
+    // 修改之前的 checkAnswer，在成功時順便呼叫 loadTable() 更新熟練度
+    // 並且在網頁初始載入時也執行一次
+    loadTable();
+
+</script>
+
+</body>
+</html>

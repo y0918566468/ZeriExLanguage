@@ -1,0 +1,6 @@
+-- 請根據你的 Flashcard 屬性對應欄位名稱
+INSERT INTO FLASHCARD (WORD, TRANSLATION, LANGUAGE, LEVEL)
+VALUES ('こんにちは', '你好', 'JA', 1);
+
+INSERT INTO FLASHCARD (WORD, TRANSLATION, LANGUAGE, LEVEL)
+VALUES ('apple', '蘋果', 'EN', 1);
