@@ -2,200 +2,347 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZeriLanguage - 語言學習</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; background: #f4f4f9; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        h1 { color: #333; margin-bottom: 20px; }
-        .word { font-size: 32px; font-weight: bold; color: #4A90E2; margin: 20px 0; }
-        input { width: 80%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; background: #4A90E2; color: white; margin: 5px; }
-        button:hover { background: #357ABD; }
-        #result { margin-top: 15px; font-weight: bold; }
+        /* 保持一些微調樣式 */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen text-slate-800 font-sans">
 
-<div class="card">
-    <h1>ZeriLanguage</h1>
-    <div id="wordDisplay" class="word">載入中...</div>
+<div class="max-w-5xl mx-auto px-4 py-10">
+    <header class="text-center mb-12">
+        <h1 class="text-5xl font-black text-slate-900 tracking-tight">Zeri<span class="text-blue-600">Language</span></h1>
+        <p class="text-slate-500 mt-3 font-medium">高效單字練習系統</p>
+    </header>
 
-    <button onclick="playAudio()">🔊 發音</button>
-    <br>
-    <input type="text" id="answerInput" placeholder="輸入中文翻譯...">
-    <br>
-    <button onclick="checkAnswer()">檢查答案</button>
-    <button onclick="nextCard()">下一題</button>
-    <input type="text" id="wordInput" placeholder="單字">
-    <input type="text" id="translationInput" placeholder="翻譯">
-    <button onclick="addCard()">新增</button>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-7 space-y-6">
+            <div class="glass-card p-10 rounded-3xl shadow-xl shadow-blue-100/50 border border-white text-center">
+                <div class="text-sm font-bold text-blue-500 uppercase tracking-widest mb-4">Current Word</div>
+                <div id="wordDisplay" class="text-6xl font-bold text-slate-800 mb-8 min-h-[80px] flex items-center justify-center">載入中...</div>
 
-    <div id="result"></div>
+                <div class="flex flex-wrap justify-center gap-3 mb-10">
+                    <button onclick="playAudio()" class="flex items-center gap-2 bg-blue-50 text-blue-600 px-6 py-3 rounded-2xl font-bold hover:bg-blue-100 transition-all active:scale-95">
+                        🔊 發音
+                    </button>
+                    <button onclick="nextCard()" class="flex items-center gap-2 bg-slate-100 text-slate-600 px-6 py-3 rounded-2xl font-bold hover:bg-slate-200 transition-all active:scale-95">
+                        下一題
+                    </button>
+                </div>
+
+                <div class="space-y-4 max-w-sm mx-auto">
+                    <input type="text" id="answerInput" placeholder="輸入中文翻譯..."
+                           class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all text-lg text-center">
+                    <button onclick="checkAnswer()"
+                            class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-1 transition-all active:scale-95 text-lg">
+                        檢查答案
+                    </button>
+                    <div id="result" class="min-h-[24px] text-lg font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-5">
+            <div class="bg-slate-900 p-8 rounded-3xl shadow-2xl text-white sticky top-10">
+                <h2 class="text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center text-sm">＋</span>
+                    快速新增單字
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Word</label>
+                        <input type="text" id="wordInput" placeholder="例如: Apple"
+                               class="w-full bg-slate-800 border-none rounded-xl px-5 py-3 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Translation</label>
+                        <input type="text" id="translationInput" placeholder="例如: 蘋果"
+                               class="w-full bg-slate-800 border-none rounded-xl px-5 py-3 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500 transition-all">
+                    </div>
+                    <button onclick="addCard()"
+                            class="w-full bg-blue-500 hover:bg-blue-400 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-500/20 transition-all active:scale-95 mt-4">
+                        新增至庫存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-16 bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 class="text-xl font-bold text-slate-800">我的單字庫</h3>
+            <div class="px-8 py-4 bg-slate-50/30 border-b border-slate-100">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                        🔍
+                    </span>
+                    <input type="text" id="searchInput" onkeyup="filterTable()"
+                           placeholder="搜尋單字、翻譯或語言..."
+                           class="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                </div>
+            </div>
+            <span class="bg-blue-100 text-blue-700 text-xs font-black px-3 py-1 rounded-full uppercase tracking-tighter">Database Connected</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                <tr class="bg-slate-50 text-slate-400 text-xs font-black uppercase tracking-widest">
+                    <th class="px-8 py-5">單字</th>
+                    <th class="px-8 py-5">翻譯</th>
+                    <th class="px-8 py-5">語言</th>
+                    <th class="px-8 py-5 text-center">熟練度</th>
+                    <th class="px-8 py-5 text-right">操作</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-slate-50">
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<hr>
-<h3>我的單字庫</h3>
-<table id="wordTable" border="1" style="width:100%; border-collapse: collapse;">
-    <thead>
-    <tr>
-        <th>單字</th>
-        <th>翻譯</th>
-        <th>語言</th>
-        <th>熟練度</th>
-    </tr>
-    </thead>
-    <tbody id="tableBody">
-    </tbody>
-</table>
-
 <script>
-    let currentCard = null;
-    let currentAudioUrl = "";
+    // 💡 全域變數，用來儲存從後端抓下來的所有單字
+    let allCards = [];
 
-    // 1. 抓取隨機單字
+    // --- 這裡完全保持你原本的 JavaScript 邏輯 ---
+    let currentCard = null;
+
     async function nextCard() {
         document.getElementById('result').innerText = "";
         document.getElementById('answerInput').value = "";
-
-        const response = await fetch('/api/cards/random');
+        const response = await fetch('/api/flashcards/random');
         const result = await response.json();
-
         currentCard = result.data;
-        currentAudioUrl = result.audioUrl;
-
         document.getElementById('wordDisplay').innerText = currentCard.word;
+
+        // 自動播放聲音
+        setTimeout(() => {
+            speak(currentCard.word, currentCard.language);
+        }, 300)
     }
 
-    // 這是核心發音引擎，誰給它文字和語言，它就唸誰
     function speak(word, lang) {
         if (!word) return;
         const utterance = new SpeechSynthesisUtterance(word);
         const upperLang = lang ? lang.toUpperCase() : 'EN';
-
         if (upperLang === 'JP' || upperLang === 'JA') utterance.lang = 'ja-JP';
         else if (upperLang === 'KR' || upperLang === 'KO') utterance.lang = 'ko-KR';
         else if (upperLang === 'EN') utterance.lang = 'en-US';
         else utterance.lang = 'zh-TW';
-
-        //utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     }
 
-    // 2. 原本的抽測發音，改為呼叫 speak
     function playAudio() {
-        if (currentCard) {
-            speak(currentCard.word, currentCard.language);
-        }
+        if (currentCard) speak(currentCard.word, currentCard.language);
     }
 
-    // 3. 檢查答案
     async function checkAnswer() {
         const userAnswer = document.getElementById('answerInput').value;
-
-        const response = await fetch('/api/cards/check', {
+        const response = await fetch('/api/flashcards/check', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: currentCard.id, answer: userAnswer })
         });
-
         const data = await response.json();
         const resultDiv = document.getElementById('result');
-
         if (data.result === 'success') {
-            resultDiv.style.color = "green";
+            resultDiv.className = "mt-4 text-green-500 font-bold animate-bounce";
             resultDiv.innerText = "正確！太棒了！";
+
+            // 後端升級
+            await fetch(`/api/flashcards/${currentCard.id}/raise-level`, { method: 'POST' });
+
+            loadTable(); // 答對了順便更新熟練度
+            setTimeout(nextCard, 1500);
         } else {
-            resultDiv.style.color = "red";
-            resultDiv.innerText = "錯了喔，正確答案是：" + data.message;
+            resultDiv.className = "mt-4 text-red-500 font-bold";
+            resultDiv.innerText = "錯了喔，答案是：" + data.message;
         }
     }
 
     async function deleteCard(id) {
-        const response = await fetch(`/api/cards/${id}`, {
-            method: 'DELETE'
-        });
-
-        // 解析 JSON
+        if(!confirm("確定要刪除嗎？")) return;
+        const response = await fetch(`/api/flashcards/${id}`, { method: 'DELETE' });
         const data = await response.json();
-
-        if (data.result === 'success') {
-            console.log("刪除成功，更新表格");
-            loadTable();
-        } else {
-            alert("刪除失敗: " + (data.message || "未知錯誤"));
-        }
+        if (data.result === 'success') loadTable();
     }
 
     function detectLanguage(text) {
-        const jpRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/; // 日文字元範圍
-        const krRegex = /[\uAC00-\uD7AF\u1100-\u11FF]/; // 韓文字元範圍
-        const enRegex = /^[A-Za-z0-9\s!@#$%^&*()_+=-]+$/; // 純英文字元
-
+        const jpRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/;
+        const krRegex = /[\uAC00-\uD7AF\u1100-\u11FF]/;
+        const enRegex = /^[A-Za-z0-9\s!@#$%^&*()_+=-]+$/;
         if (jpRegex.test(text)) return 'JA';
         if (krRegex.test(text)) return 'KO';
         if (enRegex.test(text)) return 'EN';
-        return 'ZH'; // 預設中文
+        return 'ZH';
     }
 
     async function addCard() {
         const wordEl = document.getElementById('wordInput');
         const transEl = document.getElementById('translationInput');
-
-        const wordValue = wordEl.value.trim(); // 取得文字
+        const btn = document.querySelector("button[onclick='addCard()']");
+        const wordValue = wordEl.value.trim();
         const transValue = transEl.value.trim();
-
         if (!wordValue) return alert("請輸入單字");
+        const autoLang = detectLanguage(wordValue);
 
-        const autoLang = detectLanguage(wordValue); // 自動偵測
+        btn.disabled = true;
+        btn.innerText = "傳送中...";
 
-        const response = await fetch('/api/cards/addCard', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                word: wordValue,
-                translation: transValue,
-                language: autoLang
-            })
-        });
-
-        if (response.ok) {
-            wordInput.value = "";
-            translationInput.value = "";
-            loadTable();
-        } else {
-            alert("新增失敗，檢查後端日誌");
+        try {
+            const response = await fetch('/api/flashcards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word: wordValue, translation: transValue, language: autoLang, level: 1 })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                wordEl.value = "";
+                transEl.value = "";
+                loadTable();
+            } else {
+                alert(data.message || "新增失敗");
+            }
+        } catch (error) {
+            alert("伺服器連線失敗");
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "新增至庫存";
         }
-
     }
 
     async function loadTable() {
-        const response = await fetch('/api/cards'); // 呼叫你的 GET getAllCards API
-        const cards = await response.json();
+        try {
+            const response = await fetch('/api/flashcards');
+            allCards = await response.json();
+            console.log("資料載入成功，總數：", allCards.length);
 
+            // 2. 拿到資料後，先檢查搜尋框有沒有字
+            const keyword = document.getElementById('searchInput').value.trim();
+            if (keyword === "") {
+                // 如果搜尋框是空的，直接渲染全部
+                renderTable(allCards);
+            } else {
+                // 如果搜尋框有字，維持目前的搜尋結果
+                filterTable();
+            }
+        } catch (error) {
+            console.error("讀取表格失敗:", error);
+        }
         const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = ""; // 先清空舊資料
+        tbody.innerHTML = "";
 
-        cards.forEach(card => {
-            const row = `<tr>
-            <td><span style="cursor:pointer" onclick="speak('${card.word}', '${card.language}')">🔊</span> ${card.word}</td>
-            <td>${card.translation}</td>
-            <td>${card.language}</td>
-            <td>${card.level}</td>
-            <td>
-                <button onclick="deleteCard(${card.id})">刪除</button>
+        allCards.reverse().forEach(card => {
+            // 計算熟練度進度條顏色
+            const progressWidth = Math.min(card.level * 10, 100);
+            const row = `
+            <tr class="hover:bg-slate-50/80 transition-all group">
+                <td class="px-8 py-5">
+                    <div class="flex items-center gap-3">
+                        <button onclick="speak('${card.word}', '${card.language}')" class="text-slate-300 hover:text-blue-500 transition-colors">🔊</button>
+                        <span class="font-bold text-slate-700 text-lg">${card.word}</span>
+                    </div>
+                </td>
+                <td class="px-8 py-5">
+                     <span class="bg-slate-200 text-transparent hover:text-slate-500 hover:bg-transparent px-2 py-1 rounded transition-all cursor-help select-none">
+                        ${card.translation}
+                     </span>
+                     </td>
+                <td class="px-8 py-5">
+                    <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest">${card.language}</span>
+                </td>
+                <td class="px-8 py-5">
+                    <div class="flex items-center gap-3 justify-center">
+                        <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: ${progressWidth}%"></div>
+                        </div>
+                        <span class="text-xs font-black text-slate-400 w-4">${card.level}</span>
+                    </div>
+                </td>
+                <td class="px-8 py-5 text-right">
+                    <button onclick="deleteCard(${card.id})" class="text-slate-300 hover:text-red-500 font-bold transition-colors opacity-0 group-hover:opacity-100">刪除</button>
+                </td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function renderTable(cardsToRender) {
+        const tbody = document.getElementById('tableBody');
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        // 使用 spread operator [...] 複製一份再 reverse，避免影響到原始 allCards 的順序
+        [...cardsToRender].reverse().forEach(card => {
+            const progressWidth = Math.min(card.level * 10, 100);
+            const row = `
+        <tr class="hover:bg-slate-50/80 transition-all group">
+            <td class="px-8 py-5">
+                <div class="flex items-center gap-3">
+                    <button onclick="speak('${card.word}', '${card.language}')" class="text-slate-300 hover:text-blue-500 transition-colors">🔊</button>
+                    <span class="font-bold text-slate-700 text-lg">${card.word}</span>
+                </div>
+            </td>
+            <td class="px-8 py-5">
+                <span class="bg-slate-200 text-transparent hover:text-slate-500 hover:bg-transparent px-2 py-1 rounded transition-all cursor-help select-none">
+                    ${card.translation}
+                </span>
+            </td>
+            <td class="px-8 py-5">
+                <span class="bg-slate-100 text-slate-500 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest">${card.language}</span>
+            </td>
+            <td class="px-8 py-5">
+                <div class="flex items-center gap-3 justify-center">
+                    <div class="w-24 bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full rounded-full transition-all duration-500" style="width: ${progressWidth}%"></div>
+                    </div>
+                    <span class="text-xs font-black text-slate-400 w-4">${card.level}</span>
+                </div>
+            </td>
+            <td class="px-8 py-5 text-right">
+                <button onclick="deleteCard(${card.id})" class="text-slate-300 hover:text-red-500 font-bold transition-colors opacity-0 group-hover:opacity-100">刪除</button>
             </td>
         </tr>`;
             tbody.innerHTML += row;
         });
     }
 
-    // 初始載入
+    function filterTable() {
+        // 取得輸入值並轉小寫，去空白
+        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+
+        // 如果關鍵字為空，直接顯示所有原始資料
+        if (keyword === "") {
+            renderTable(allCards);
+            return;
+        }
+
+        // 從「完整的」allCards 中進行篩選
+        const filtered = allCards.filter(card => {
+            // 確保欄位存在再進行 includes 判斷，防止噴錯
+            const word = (card.word || "").toLowerCase();
+            const translation = (card.translation || "").toLowerCase();
+            const language = (card.language || "").toLowerCase();
+
+            return word.includes(keyword) ||
+                translation.includes(keyword) ||
+                language.includes(keyword);
+        });
+
+        renderTable(filtered);
+    }
+
+    // 啟動
     nextCard();
-
-    // 修改之前的 checkAnswer，在成功時順便呼叫 loadTable() 更新熟練度
-    // 並且在網頁初始載入時也執行一次
     loadTable();
-
 </script>
 
 </body>

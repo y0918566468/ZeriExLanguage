@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Random;
 
 @RestController
-@RequestMapping("/api/cards")
+@RequestMapping("/api/flashcards")
 public class FlashcardController {
     @Autowired
     private FlashcardRepository repository;
@@ -107,6 +107,15 @@ public class FlashcardController {
         }
 
         return response;
+    }
+
+    @PostMapping("/{id}/raise-level")
+    public ResponseEntity<?> raiseLevel(@PathVariable Long id) {
+        return flashcardService.findById(id).map(flashcard ->  {
+            flashcard.setLevel(Math.min(flashcard.getLevel() + 1, 10)); //limite 10
+            flashcardService.save(flashcard);
+            return ResponseEntity.ok(Map.of("result", "success", "newLevel", flashcard.getLevel()));
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     // 網址：GET http://localhost:8080/api/cards/search?word=こんにちは

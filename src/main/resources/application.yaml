@@ -3,27 +3,23 @@ spring:
     name: ZeriExLanguage
 
   datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    # 💡 關鍵：告訴 Spring 等 Hibernate 把表建好了，再跑 data.sql
-    defer-datasource-initialization: true
+    # 💡 連結到你剛才 Docker 跑起來的資料庫
+    url: jdbc:postgresql://localhost:5432/zeri_lang_db
+    username: zeri
+    password: yes54425
+    driver-class-name: org.postgresql.Driver
 
   sql:
     init:
-      mode: always # 💡 改回 always，讓它去讀取 data.sql
+      mode: always # 💡 強制每次啟動都檢查並執行 SQL 腳本
 
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  jpa:
+    defer-datasource-initialization: true # 💡 確保 Table 建好後才跑 SQL
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
+# 保持 server 設定不變
 server:
   port: 8080

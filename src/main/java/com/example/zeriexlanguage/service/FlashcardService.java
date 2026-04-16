@@ -6,12 +6,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class FlashcardService {
 
     @Autowired
     private FlashcardRepository repository;
+
+    public Optional<Flashcard> findById(Long id) {
+        return repository.findById(id);
+    }
+
+    public Flashcard save(Flashcard card) {
+        return repository.save(card);
+    }
 
     // 把原本在 Controller 裡的複雜邏輯搬過來
     public Flashcard addCard(Map<String, String> request) {

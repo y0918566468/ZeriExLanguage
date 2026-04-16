@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15
+    container_name: zeri-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: zeri
+      POSTGRES_PASSWORD: yes54425
+      POSTGRES_DB: zeri_lang_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
