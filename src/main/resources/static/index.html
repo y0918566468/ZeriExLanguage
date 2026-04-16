@@ -21,6 +21,21 @@
         <p class="text-slate-500 mt-3 font-medium">高效單字練習系統</p>
     </header>
 
+    <div class="grid grid-cols-3 gap-4 mb-10">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">總單字量</div>
+            <div id="stat-total" class="text-3xl font-black text-slate-800 tracking-tighter">0</div>
+        </div>
+        <div class="bg-blue-600 p-6 rounded-2xl shadow-lg shadow-blue-200 text-center text-white">
+            <div class="text-xs font-bold text-blue-100 uppercase tracking-widest mb-1">已精通</div>
+            <div id="stat-mastered" class="text-3xl font-black tracking-tighter">0</div>
+        </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 text-center">
+            <div class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">學習中</div>
+            <div id="stat-learning" class="text-3xl font-black text-slate-800 tracking-tighter">0</div>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div class="lg:col-span-7 space-y-6">
             <div class="glass-card p-10 rounded-3xl shadow-xl shadow-blue-100/50 border border-white text-center">
@@ -157,9 +172,10 @@
             resultDiv.innerText = "正確！太棒了！";
 
             // 後端升級
-            await fetch(`/api/flashcards/${currentCard.id}/raise-level`, { method: 'POST' });
+            //await fetch(`/api/flashcards/${currentCard.id}/raise-level`, { method: 'POST' });
 
             loadTable(); // 答對了順便更新熟練度
+            updateStats();
             setTimeout(nextCard, 1500);
         } else {
             resultDiv.className = "mt-4 text-red-500 font-bold";
@@ -171,7 +187,10 @@
         if(!confirm("確定要刪除嗎？")) return;
         const response = await fetch(`/api/flashcards/${id}`, { method: 'DELETE' });
         const data = await response.json();
-        if (data.result === 'success') loadTable();
+        if (data.result === 'success') {
+            loadTable();
+            updateStats();
+        }
     }
 
     function detectLanguage(text) {
@@ -216,6 +235,8 @@
             btn.disabled = false;
             btn.innerText = "新增至庫存";
         }
+
+        updateStats();
     }
 
     async function loadTable() {
@@ -340,9 +361,22 @@
         renderTable(filtered);
     }
 
+    async function updateStats() {
+        try {
+            const response = await fetch(`/api/flashcards/stats`);
+            const stats = await response.json();
+            document.getElementById('stat-total').innerText = stats.total;
+            document.getElementById('stat-mastered').innerText = stats.mastered;
+            document.getElementById('stat-learning').innerText = stats.learning;
+        } catch (error) {
+            console.error("統計數據更新失敗");
+        }
+    }
+
     // 啟動
     nextCard();
     loadTable();
+    updateStats();
 </script>
 
 </body>

@@ -23,19 +23,30 @@ public class FlashcardService {
     }
 
     // 把原本在 Controller 裡的複雜邏輯搬過來
-    public Flashcard addCard(Map<String, String> request) {
-        Flashcard card = new Flashcard();
+    public Flashcard addCard(Flashcard card) {
+        // 處理字串
+        if (card.getWord() != null) card.setWord(card.getWord().trim());
+        if (card.getTranslation() != null) card.setTranslation(card.getTranslation().trim());
 
-        // 邏輯封裝在此
-        String word = request.getOrDefault("word", "Unknown").trim();
-        String translation = request.getOrDefault("translation", "未翻譯").trim();
-        String lang = request.get("language");
+        // 處理語言預設值與大小寫
+        if (card.getLanguage() == null || card.getLanguage().isEmpty()) {
+            card.setLanguage("EN");
+        } else {
+            card.setLanguage(card.getTranslation().toUpperCase());
+        }
 
-        card.setWord(word);
-        card.setTranslation(translation);
-        card.setLanguage((lang == null || lang.isEmpty()) ? "EN" : lang.toUpperCase());
         card.setLevel(1);
 
         return repository.save(card);
+    }
+
+    public Map<String, Long> getStatistics() {
+        long total = repository.count();
+        long mastered = repository.countByLevelGreaterThanEqual(10);
+        return Map.of(
+                "total", total,
+                "mastered", mastered,
+                "learning", total - mastered
+        );
     }
 }

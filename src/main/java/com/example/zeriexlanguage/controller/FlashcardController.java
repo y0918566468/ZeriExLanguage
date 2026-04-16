@@ -124,6 +124,11 @@ public class FlashcardController {
         return repository.findByWordContaining(word);
     }
 
+    @GetMapping("/stats")
+    public Map<String, Long> getStats() {
+        return flashcardService.getStatistics();
+    }
+
     // 在 FlashcardController.java 裡
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteCard(@PathVariable Long id) {
@@ -142,9 +147,9 @@ public class FlashcardController {
     }
 
     @PostMapping("/addCard")
-    public Flashcard addCard(@RequestBody Map<String, String> request) {
+    public Flashcard addCard(@RequestBody Flashcard card) {
         // 呼叫
-        return flashcardService.addCard(request);
+        return flashcardService.addCard(card);
     }
 
 }

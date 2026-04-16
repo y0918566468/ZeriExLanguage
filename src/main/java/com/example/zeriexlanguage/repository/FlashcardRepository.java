@@ -10,6 +10,12 @@ public interface FlashcardRepository extends JpaRepository<Flashcard, Long> {
     // JPA 魔法：只要方法名叫做 findBy...Containing，它會自動生成 LIKE %keyword% 的 SQL
     List<Flashcard> findByWordContaining(String keyword);
 
+    // 統計總單字量
+    long count();
+
+    // 增加熟練度大於等於特定等級的單字
+    long countByLevelGreaterThanEqual(int level);
+
     // 你也可以增加「依語言篩選」
     List<Flashcard> findByLanguage(String language);
 }

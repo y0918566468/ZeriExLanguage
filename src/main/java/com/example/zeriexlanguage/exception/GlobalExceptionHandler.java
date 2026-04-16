@@ -18,7 +18,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleException(Exception e) {
         return ResponseEntity.badRequest().body(Map.of(
                 "result", "fail",
-                "message", "這個單字已經存在於你的單字庫中囉！"
+                "message", "伺服器發生未預期錯誤" + e.getMessage()
         ));
     }
 
