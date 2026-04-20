@@ -118,6 +118,15 @@ public class FlashcardController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{id}/reset-level")
+    public ResponseEntity<?> resetLevel(@PathVariable Long id) {
+        return flashcardService.findById(id).map(card ->  {
+            card.setLevel(0);
+            flashcardService.save(card);
+            return ResponseEntity.ok(Map.of("result", "success", "newLevel", 1));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     // 網址：GET http://localhost:8080/api/cards/search?word=こんにちは
     @GetMapping("/search")
     public List<Flashcard> searchCards(@RequestParam String word) {

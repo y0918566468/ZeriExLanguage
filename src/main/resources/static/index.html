@@ -58,6 +58,13 @@
                             class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-1 transition-all active:scale-95 text-lg">
                         檢查答案
                     </button>
+                    <div class="flex items-center justify-center gap-3 mt-4">
+                        <span class="text-sm text-slate-500 font-medium">答對後自動下一題</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="autoNextToggle" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
                     <div id="result" class="min-h-[24px] text-lg font-bold"></div>
                 </div>
             </div>
@@ -176,7 +183,12 @@
 
             loadTable(); // 答對了順便更新熟練度
             updateStats();
-            setTimeout(nextCard, 1500);
+
+            // 檢查自動下一題開關
+            const isAutoNext = document.getElementById('autoNextToggle').checked;
+            if (isAutoNext) {
+                setTimeout(nextCard, 1500);
+            }
         } else {
             resultDiv.className = "mt-4 text-red-500 font-bold";
             resultDiv.innerText = "錯了喔，答案是：" + data.message;
@@ -190,6 +202,21 @@
         if (data.result === 'success') {
             loadTable();
             updateStats();
+        }
+    }
+
+    async function resetLevel(id) {
+        if (!confirm("確定要重製這個單字的熟練度嗎?")) return;
+        try {
+            const response = await fetch(`/api/flashcards/${id}/reset-level`, {method: 'POST'});
+            if (response.ok) {
+                loadTable();
+                updateStats();
+            } else {
+                alert("重置失敗，請檢查後端 API");
+            }
+        } catch(error) {
+            console.error("重置錯誤", error);
         }
     }
 
@@ -287,7 +314,8 @@
                         <span class="text-xs font-black text-slate-400 w-4">${card.level}</span>
                     </div>
                 </td>
-                <td class="px-8 py-5 text-right">
+                <td class="px-8 py-5 text-right space-x-2">
+                    <button onclick="resetLevel(${card.id})" class="text-slate-400 hover:text-blue-500 font-bold transition-colors opacity-0 group-hover:opacity-100 text-sm">重置</button>
                     <button onclick="deleteCard(${card.id})" class="text-slate-300 hover:text-red-500 font-bold transition-colors opacity-0 group-hover:opacity-100">刪除</button>
                 </td>
             </tr>`;
@@ -328,7 +356,8 @@
                     <span class="text-xs font-black text-slate-400 w-4">${card.level}</span>
                 </div>
             </td>
-            <td class="px-8 py-5 text-right">
+            <td class="px-8 py-5 text-right space-x-2">
+                <button onclick="resetLevel(${card.id})" class="text-slate-400 hover:text-blue-500 font-bold transition-colors opacity-0 group-hover:opacity-100">重置</button>
                 <button onclick="deleteCard(${card.id})" class="text-slate-300 hover:text-red-500 font-bold transition-colors opacity-0 group-hover:opacity-100">刪除</button>
             </td>
         </tr>`;
